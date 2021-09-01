@@ -17,13 +17,12 @@ const ALTERNATE_IMAGE_URL = `https://static.toiimg.com/thumb/msid-67586673,
  */
 
 async function getShowsByTerm(term) {
-  // ADD: Remove placeholder & make request to TVMaze search shows API.
+
   const showSearchResults = await axios.get($API_SHOW_SEARCH_URL,
     { params: { q: term } });
   const allShows = showSearchResults.data;
   let allShowsInfo = [];
 
-  //refactor with map
   for (let showInd = 0; showInd < allShows.length; showInd++) {
     let showData = allShows[showInd].show;
     let showDataObj = {
@@ -37,9 +36,7 @@ async function getShowsByTerm(term) {
   return allShowsInfo;
 }
 
-
-
-/** Given list of shows, create markup for each and to DOM */
+/** Given list of shows, create markup for each and add to DOM */
 
 function populateShows(shows) {
   $showsList.empty();
@@ -67,7 +64,6 @@ function populateShows(shows) {
   }
 }
 
-
 /** Handle search form submission: get shows from API and display.
  *    Hide episodes area (that only gets shown if they ask for episodes)
  */
@@ -78,6 +74,8 @@ async function searchForShowAndDisplay() {
 
   $episodesArea.hide();
   populateShows(shows);
+
+  $(".Show-getEpisodes").on("click", getAndShowEpisodes)
 }
 
 $searchForm.on("submit", async function (evt) {
@@ -89,7 +87,7 @@ $searchForm.on("submit", async function (evt) {
 /** Given a show ID, get from API and return (promise) array of episodes:
  *      { id, name, season, number }
  */
-// input show ID into API Search url --> returns an array of objects
+
 async function getEpisodesOfShow(id) {
   const episodeIDSearchURL = `${API_EPISODE_SEARCH_URL}${id}/episodes`;
   const episodes = await axios.get(episodeIDSearchURL);
@@ -106,18 +104,27 @@ async function getEpisodesOfShow(id) {
 }
 
 /** Accepts an array of episode information and puts it into the DOM */
-//Loop through all the episodes, extract information into variable
-//Put each episode info into a new Li
-//Append to UL
 
-function populateEpisodes(episodes) { 
+function populateEpisodes(episodes) {
   const $episodeUL = $("#episodesList");
-  for (episode of episodes) {
+  for (let episode of episodes) {
     const episodeString = `${episode.name}, (Season: ${episode.season}, Episode: ${episode.number})`;
     let $episodeLi = $("<li></li>");
     $episodeLi.text(episodeString)
-              .addClass("episode")
+      .addClass("episode")
     $episodeUL.append($episodeLi);
   }
-  
+  $("#episodesArea").css("display", "block");
 }
+
+/** Handle clicking "Episodes": get show ID and add a list of 
+ * all episodes to the DOM
+ */
+
+async function getAndShowEpisodes(evt) {
+  console.log("getAndShowEpisode is running")
+  const showID = $(evt.target).closest(".Show").data().showId;
+  const selectedShowEpisodes = await getEpisodesOfShow(showID);
+  populateEpisodes(selectedShowEpisodes);
+}
+
