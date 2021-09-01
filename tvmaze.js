@@ -1,11 +1,13 @@
 "use strict";
 
 const $API_SHOW_SEARCH_URL = "http://api.tvmaze.com/search/shows?"
-
+const API_EPISODE_SEARCH_URL = "http://api.tvmaze.com/shows/"
 const $showsList = $("#showsList");
 const $episodesArea = $("#episodesArea");
 const $searchForm = $("#searchForm");
-const ALTERNATE_IMAGE_URL = "https://static.toiimg.com/thumb/msid-67586673,width-800,height-600,resizemode-75,imgsize-3918697,pt-32,y_pad-40/67586673.jpg"
+const ALTERNATE_IMAGE_URL = `https://static.toiimg.com/thumb/msid-67586673,
+                             width-800,height-600,resizemode-75,imgsize-3918697,
+                             pt-32,y_pad-40/67586673.jpg`
 
 /** Given a search term, search for tv shows that match that query.
  *
@@ -14,14 +16,14 @@ const ALTERNATE_IMAGE_URL = "https://static.toiimg.com/thumb/msid-67586673,width
  *    (if no image URL given by API, put in a default image URL)
  */
 
-async function getShowsByTerm( /* term */) {
+async function getShowsByTerm(term) {
   // ADD: Remove placeholder & make request to TVMaze search shows API.
-  const $searchFormTerm = $("#searchForm-term").val();
   const showSearchResults = await axios.get($API_SHOW_SEARCH_URL,
-    { params: { q: $searchFormTerm } });
-  const allShows = showSearchResults.data; //show array
+    { params: { q: term } });
+  const allShows = showSearchResults.data;
   let allShowsInfo = [];
 
+  //refactor with map
   for (let showInd = 0; showInd < allShows.length; showInd++) {
     let showData = allShows[showInd].show;
     let showDataObj = {
@@ -41,15 +43,13 @@ async function getShowsByTerm( /* term */) {
 
 function populateShows(shows) {
   $showsList.empty();
-  
+
   for (let show of shows) {
-    const showImageURL = show.image;
-    console.log(showImageURL)
     const $show = $(
       `<div data-show-id="${show.id}" class="Show col-md-12 col-lg-6 mb-4">
          <div class="media">
            <img 
-              src= ${showImageURL}
+              src= ${show.image}
               alt="Bletchly Circle San Francisco" 
               class="w-25 mr-3">
            <div class="media-body">
@@ -89,9 +89,35 @@ $searchForm.on("submit", async function (evt) {
 /** Given a show ID, get from API and return (promise) array of episodes:
  *      { id, name, season, number }
  */
+// input show ID into API Search url --> returns an array of objects
+async function getEpisodesOfShow(id) {
+  const episodeIDSearchURL = `${API_EPISODE_SEARCH_URL}${id}/episodes`;
+  const episodes = await axios.get(episodeIDSearchURL);
+  const episodesInfo = episodes.data.map(function (episode) {
+    let episodeInfo = {
+      id: episode.id,
+      name: episode.name,
+      season: episode.season,
+      number: episode.number
+    }
+    return episodeInfo;
+  });
+  return episodesInfo;
+}
 
-// async function getEpisodesOfShow(id) { }
+/** Accepts an array of episode information and puts it into the DOM */
+//Loop through all the episodes, extract information into variable
+//Put each episode info into a new Li
+//Append to UL
 
-/** Write a clear docstring for this function... */
-
-// function populateEpisodes(episodes) { }
+function populateEpisodes(episodes) { 
+  const $episodeUL = $("#episodesList");
+  for (episode of episodes) {
+    const episodeString = `${episode.name}, (Season: ${episode.season}, Episode: ${episode.number})`;
+    let $episodeLi = $("<li></li>");
+    $episodeLi.text(episodeString)
+              .addClass("episode")
+    $episodeUL.append($episodeLi);
+  }
+  
+}
