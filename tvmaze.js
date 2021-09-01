@@ -5,6 +5,7 @@ const $API_SHOW_SEARCH_URL = "http://api.tvmaze.com/search/shows?"
 const $showsList = $("#showsList");
 const $episodesArea = $("#episodesArea");
 const $searchForm = $("#searchForm");
+const ALTERNATE_IMAGE_URL = "https://static.toiimg.com/thumb/msid-67586673,width-800,height-600,resizemode-75,imgsize-3918697,pt-32,y_pad-40/67586673.jpg"
 
 /** Given a search term, search for tv shows that match that query.
  *
@@ -27,7 +28,7 @@ async function getShowsByTerm( /* term */) {
       id: showData.id,
       name: showData.name,
       summary: showData.summary,
-      image: showData.url
+      image: showData.image.medium || ALTERNATE_IMAGE_URL
     }
     allShowsInfo.push(showDataObj);
   }
@@ -40,13 +41,15 @@ async function getShowsByTerm( /* term */) {
 
 function populateShows(shows) {
   $showsList.empty();
-
+  
   for (let show of shows) {
+    const showImageURL = show.image;
+    console.log(showImageURL)
     const $show = $(
       `<div data-show-id="${show.id}" class="Show col-md-12 col-lg-6 mb-4">
          <div class="media">
            <img 
-              src="http://static.tvmaze.com/uploads/images/medium_portrait/160/401704.jpg" 
+              src= ${showImageURL}
               alt="Bletchly Circle San Francisco" 
               class="w-25 mr-3">
            <div class="media-body">
