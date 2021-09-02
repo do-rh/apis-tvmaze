@@ -108,8 +108,9 @@ async function getEpisodesOfShow(id) {
 function populateEpisodes(episodes) {
   const $episodeUL = $("#episodesList");
   for (let episode of episodes) {
-    const episodeString = `${episode.name}, (Season: ${episode.season}, Episode: ${episode.number})`;
-    let $episodeLi = $("<li></li>");
+    const episodeString = `${episode.name}, (Season: ${episode.season}, 
+              Episode: ${episode.number})`;
+    let $episodeLi = $("<li/>");
     $episodeLi.text(episodeString)
       .addClass("episode")
     $episodeUL.append($episodeLi);
@@ -123,8 +124,8 @@ function populateEpisodes(episodes) {
 
 async function getAndShowEpisodes(evt) {
   console.log("getAndShowEpisode is running")
-  const showID = $(evt.target).closest(".Show").data().showId;
-  const selectedShowEpisodes = await getEpisodesOfShow(showID);
-  populateEpisodes(selectedShowEpisodes);
+  const showID = $(evt.target).closest("[data-show-id]").data().showId;
+  const episodes = await getEpisodesOfShow(showID);
+  populateEpisodes(episodes);
 }
 
